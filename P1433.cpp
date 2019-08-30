@@ -1,81 +1,72 @@
 #include <iostream>
-#include <queue>
-#include <cstdio>
-
+#include <map>
+#include <iomanip>
+#include <bitset>
+#include <cmath>
 using namespace std;
 
-struct Node
-{
-    int x,y;
-    int step;
-    Node(int x_, int y_, int step_):x(x_),y(y_),step(step_){};
-};
+int n;
+float points[16][2];
+float dis[16][16];
+char vis[16];
+float mincost = 0x3f3f3f3f;
 
-queue<Node> q;
-
-int board[401][401];
-bool vis[401][401];
-int dir[8][2] = {{-2,1},{-1,2},{1,2},{2,1},{2,-1},{1,-2},{-1,-2},{-2,-1}};
-int n,m;
-bool legal(int x,int y)
-{
-    if(x<1 || x>n || y<1 || y>m)
-        return 0;
-    return 1;
-}
-void bfs()
-{
-    while(q.size())
-    {
-        Node node = q.front();
-        q.pop();
-
-        int x,y,step;
-        x = node.x;y=node.y;step=node.step;
-
-        if(vis[x][y])
-            continue;
-        vis[x][y] = 1;
-        board[x][y] = step;
-
-        for(int i=0; i<8; ++i)
-        {
-            int dx = x+dir[i][0];
-            int dy = y+dir[i][1];
-
-            if(legal(dx,dy))
-                q.push(Node(dx,dy,step+1));
-        }
-
-    }
-}
-
-int getStep(int x,int y)
-{
-    if(!vis[x][y])
-        return -1;
-    return board[x][y];
-}
-
-void print()
-{
-    for(int i=1;i<=n;++i)
-    {
-        for(int j=1;j<=m;++j)
-        {
-            printf("%-5d",getStep(i,j));
-        }
-        printf("\n");
-    }
-}
-
-
+void dfs(int depth, int pos, float cost);
+float distance(int a,int b);
 
 int main()
 {
-    int x,y;
-    cin >> n >> m >> x >> y;
-    q.push(Node(x,y,0));
-    bfs();
-    print();
+    cin >> n;
+    for(int i=1; i<=n; ++i)
+    {
+        cin >> points[i][0] >> points[i][1];
+    }
+
+    for(int i=0; i<=n; ++i)
+    {
+        for(int j=i+1; j<=n; ++j)
+        {
+            float dis_ = distance(i,j);
+            dis[i][j] = dis_;
+            dis[j][i] = dis_;
+        }
+    }
+
+    dfs(0,0,0);
+
+    cout << setiosflags(ios::fixed) << setprecision(2) << mincost;
+}
+
+float distance(int a,int b)
+{
+    float x1 = points[a][0];
+    float y1 = points[a][1];
+
+    float x2 = points[b][0];
+    float y2 = points[b][1];
+
+    return sqrt( (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) );
+}
+
+void dfs(int depth, int pos, float cost)
+{
+    if(cost >= mincost)
+        return;
+    if(depth == n)
+    {
+        mincost = cost;
+        return;
+    }
+
+    vis[pos] = 1;
+
+    for(int i=1; i<=n; ++i)
+    {
+        if(!vis[i])
+        {
+            dfs(depth+1, i, cost+dis[pos][i]);
+        }
+    }
+
+    vis[pos] = 0;
 }
